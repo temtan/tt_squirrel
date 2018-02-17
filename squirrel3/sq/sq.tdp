@@ -1,0 +1,35 @@
+[Project]
+Name=sq
+UseIcon=0
+IconFilePath=\
+IconFileIndex=0
+Element1=sq.c	1	0
+Element2=sq.tdp.nut	1	0
+[Structure0]
+Name=Release
+TargetKind=Console
+OutputDirectoryName=Release
+TargetName=sq.exe
+TargetArgument=
+TargetCurrentDirectory=@@output_folder_path@@
+TargetUseOutputEdit=0
+OptimizeKind=Fastest
+RuntimeLibrary=Dynamic
+UseException=1
+UsePrecompiledHeader=0
+PrecompiledHeaderSource=
+PrecompiledHeaderHeader=
+PrecompiledHeaderForceInclude=1
+IncludePath0=..\include
+Define0=WIN32
+Define1=NDEBUG
+Define2=_CONSOLE
+Define3=_MBCS
+WarningLevel=3
+ErrorIfWarning=0
+LibraryPath0=..\lib\squirrel.lib
+LibraryPath1=..\lib\sqstdlib.lib
+NoLogo=1
+CompilerOtherOption=
+ResourceCompilerOption=/l 0x410 /d "NDEBUG"
+ExtensionScriptPath=.\sq.tdp.nut

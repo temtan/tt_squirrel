@@ -1,0 +1,16 @@
+--- sqlexer.cpp	Sun Oct 09 01:36:24 2016
++++ sqlexer_old.cpp	Tue Mar 08 00:40:20 2016
+@@ -414,13 +414,6 @@ SQInteger SQLexer::ReadString(SQInteger 
+                 }
+                 break;
+             default:
+-#ifndef SQUNICODE
+-              if ( ((CUR_CHAR >= 0x81) && (CUR_CHAR <= 0x9F)) ||
+-                   ((CUR_CHAR >= 0xE0) && (CUR_CHAR <= 0xFC)) ) {
+-                APPEND_CHAR(CUR_CHAR);
+-                NEXT();
+-              }
+-#endif
+                 APPEND_CHAR(CUR_CHAR);
+                 NEXT();
+             }
