@@ -557,28 +557,25 @@ VirtualMachine::GetTopType( void )
 
 
 Object
-VirtualMachine::GetNullObject( bool need_release )
+VirtualMachine::GetNullObject( bool auto_reference )
 {
   StackRecoverer recoverer( this );
   this->Native().PushNull();
-  return this->GetStackTopObject( need_release );
+  return this->GetStackTopObject( auto_reference );
 }
 
 Object
-VirtualMachine::GetStackObject( int index, bool need_release )
+VirtualMachine::GetStackObject( int index, bool auto_reference )
 {
   HSQOBJECT object = this->Native().GetStackObject( index );
-  Object tmp( object, *this, need_release );
-  if ( need_release ) {
-    tmp.AddReference();
-  }
+  Object tmp( object, *this, auto_reference );
   return tmp;
 }
 
 Object
-VirtualMachine::GetStackTopObject( bool need_release )
+VirtualMachine::GetStackTopObject( bool auto_reference )
 {
-  return this->GetStackObject( Const::StackTop, need_release );
+  return this->GetStackObject( Const::StackTop, auto_reference );
 }
 
 

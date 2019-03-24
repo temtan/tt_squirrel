@@ -164,9 +164,9 @@ namespace TtSquirrel {
 
     ObjectType GetTopType( void );
 
-    Object GetNullObject( bool need_release );
-    Object GetStackObject( int index, bool need_release );
-    Object GetStackTopObject( bool need_release );
+    Object GetNullObject( bool auto_reference = true );
+    Object GetStackObject( int index, bool auto_reference = true );
+    Object GetStackTopObject( bool auto_reference = true );
 
     std::vector<StackInformation> GetCallStack( void );
 

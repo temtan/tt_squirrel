@@ -33,7 +33,7 @@ namespace TtSquirrel {
     class Outer;
 
   public:
-    explicit Object( HSQOBJECT object, VirtualMachine& vm, bool need_release = true );
+    explicit Object( HSQOBJECT object, VirtualMachine& vm, bool auto_reference = true );
     Object( const Object& other );
 
     virtual Object& operator =( const Object& other );
@@ -59,7 +59,7 @@ namespace TtSquirrel {
   protected:
     HSQOBJECT       object_;
     VirtualMachine* vm_;
-    bool            need_release_;
+    bool            auto_reference_;
   };
 
   // -- Object::Null -----------------------------------------------------

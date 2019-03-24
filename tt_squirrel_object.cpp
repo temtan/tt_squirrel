@@ -10,20 +10,23 @@ using namespace TtSquirrel;
 
 
 // -- Object -------------------------------------------------------------
-Object::Object( HSQOBJECT object, VirtualMachine& vm, bool need_release ) :
+Object::Object( HSQOBJECT object, VirtualMachine& vm, bool auto_reference ) :
 object_( object ),
 vm_( &vm ),
-need_release_( need_release )
+auto_reference_( auto_reference )
 {
+  if ( auto_reference_ ) {
+    this->AddReference();
+  }
 }
 
 
 Object::Object( const Object& other ) :
 object_( other.object_ ),
 vm_( other.vm_ ),
-need_release_( other.need_release_ )
+auto_reference_( other.auto_reference_ )
 {
-  if ( need_release_ ) {
+  if ( auto_reference_ ) {
     this->AddReference();
   }
 }
@@ -32,13 +35,13 @@ need_release_( other.need_release_ )
 Object&
 Object::operator =( const Object& other )
 {
-  if ( need_release_ ) {
+  if ( auto_reference_ ) {
     this->Release();
   }
-  object_ = other.object_;
-  vm_ = other.vm_;
-  need_release_ = other.need_release_;
-  if ( need_release_ ) {
+  this->object_         = other.object_;
+  this->vm_             = other.vm_;
+  this->auto_reference_ = other.auto_reference_;
+  if ( auto_reference_ ) {
     this->AddReference();
   }
   return *this;
@@ -47,7 +50,7 @@ Object::operator =( const Object& other )
 
 Object::~Object()
 {
-  if ( need_release_ ) {
+  if ( auto_reference_ ) {
     this->Release();
   }
 }
