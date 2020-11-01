@@ -126,7 +126,7 @@ NativeAPI::WakeupVM( bool resumedret, bool retval, bool raiseerror, bool thrower
 int
 NativeAPI::GetVMState( void )
 {
-  return sq_getvmstate( vm_ );
+  return static_cast<int>( sq_getvmstate( vm_ ) );
 }
 
 void
@@ -177,7 +177,7 @@ NativeAPI::SetVMReleaseHook( SQRELEASEHOOK hook )
 int
 NativeAPI::CollectGarbage( void )
 {
-  return sq_collectgarbage( vm_ );
+  return static_cast<int>( sq_collectgarbage( vm_ ) );
 }
 
 void
@@ -190,7 +190,7 @@ NativeAPI::ResurrectUnreachable( void )
 int
 NativeAPI::GetVersion( void )
 {
-  return sq_getversion();
+  return static_cast<int>( sq_getversion() );
 }
 
 
@@ -229,13 +229,13 @@ NativeAPI::SetCompilerErrorHandler( SQCOMPILERERROR f )
 int
 NativeAPI::Cmp( void )
 {
-  return sq_cmp( vm_ );
+  return static_cast<int>( sq_cmp( vm_ ) );
 }
 
 int
 NativeAPI::GetTop( void )
 {
-  return sq_gettop( vm_ );
+  return static_cast<int>( sq_gettop( vm_ ) );
 }
 
 void
@@ -291,7 +291,11 @@ NativeAPI::CreateInstance( int index )
 void
 NativeAPI::GetClosureInfo( int index, unsigned int* nparams, unsigned int* nfreevars )
 {
-  RESULT_TEST( sq_getclosureinfo, vm_, index, nparams, nfreevars );
+  SQUnsignedInteger tmp_nparams;
+  SQUnsignedInteger tmp_nfreevars;
+  RESULT_TEST( sq_getclosureinfo, vm_, index, &tmp_nparams, &tmp_nfreevars );
+  *nparams = static_cast<unsigned int>( tmp_nparams );
+  *nfreevars = static_cast<unsigned int>( tmp_nfreevars );
 }
 
 void
@@ -316,7 +320,7 @@ NativeAPI::SetClosureRoot( int index )
 int
 NativeAPI::GetSize( int index )
 {
-  return sq_getsize( vm_, index );
+  return static_cast<int>( sq_getsize( vm_, index ) );
 }
 
 SQHash
@@ -329,9 +333,9 @@ NativeAPI::GetHash( int index )
 int
 NativeAPI::GetAsInteger( int index )
 {
-  int tmp;
+  SQInteger tmp;
   RESULT_TEST( sq_getinteger, vm_, index, &tmp );
-  return tmp;
+  return static_cast<int>( tmp );
 }
 
 float
@@ -522,7 +526,7 @@ NativeAPI::SetTypeTag( int index, SQUserPointer type_tag )
 bool
 NativeAPI::ToBoolean( int index )
 {
-  unsigned int tmp;
+  SQBool tmp;
   sq_tobool( vm_, index, &tmp );
   return SQBOOL_TO_BOOLEAN( tmp );
 }
@@ -860,13 +864,13 @@ NativeAPI::AddReference( HSQOBJECT* object )
 unsigned int
 NativeAPI::GetReferenceCount( HSQOBJECT* object )
 {
-  return sq_getrefcount( vm_, object );
+  return static_cast<unsigned int>( sq_getrefcount( vm_, object ) );
 }
 
 unsigned int
 NativeAPI::GetVMReferenceCount( HSQOBJECT* object )
 {
-  return sq_getvmrefcount( vm_, object );
+  return static_cast<unsigned int>( sq_getvmrefcount( vm_, object ) );
 }
 
 void
@@ -892,7 +896,7 @@ NativeAPI::ObjectToBoolean( HSQOBJECT* object )
 int
 NativeAPI::ObjectToInteger( HSQOBJECT* object )
 {
-  return sq_objtointeger( object );
+  return static_cast<int>( sq_objtointeger( object ) );
 }
 
 float
@@ -1006,7 +1010,7 @@ NativeAPI::Standard::GetBlob( int index )
 int
 NativeAPI::Standard::GetBlobSize( int index )
 {
-  return sqstd_getblobsize( vm_, index );
+  return static_cast<int>( sqstd_getblobsize( vm_, index ) );
 }
 
 void
@@ -1028,43 +1032,43 @@ NativeAPI::Standard::FOpen( const std::string& filename, const std::string& mode
 int
 NativeAPI::Standard::FRead( SQUserPointer buffer, int size, int count, SQFILE file )
 {
-  return sqstd_fread( buffer, size, count, file );
+  return static_cast<int>( sqstd_fread( buffer, size, count, file ) );
 }
 
 int
 NativeAPI::Standard::FWrite( SQUserPointer buffer, int size, int count, SQFILE file )
 {
-  return sqstd_fwrite( buffer, size, count, file );
+  return static_cast<int>( sqstd_fwrite( buffer, size, count, file ) );
 }
 
 int
 NativeAPI::Standard::FSeek( SQFILE file, int offset, int origin )
 {
-  return sqstd_fseek( file, offset, origin );
+  return static_cast<int>( sqstd_fseek( file, offset, origin ) );
 }
 
 int
 NativeAPI::Standard::FTell( SQFILE file )
 {
-  return sqstd_ftell( file );
+  return static_cast<int>( sqstd_ftell( file ) );
 }
 
 int
 NativeAPI::Standard::FFlush( SQFILE file )
 {
-  return sqstd_fflush( file );
+  return static_cast<int>( sqstd_fflush( file ) );
 }
 
 int
 NativeAPI::Standard::Fclose( SQFILE file )
 {
-  return sqstd_fclose( file );
+  return static_cast<int>( sqstd_fclose( file ) );
 }
 
 int
 NativeAPI::Standard::FEof( SQFILE file )
 {
-  return sqstd_feof( file );
+  return static_cast<int>( sqstd_feof( file ) );
 }
 
 
@@ -1156,7 +1160,7 @@ NativeAPI::Standard::RegexSearchRange( SQRex* exp, const char* text_begin, const
 int
 NativeAPI::Standard::RegexGetSubExpressionCount( SQRex* exp )
 {
-  return sqstd_rex_getsubexpcount( exp );
+  return static_cast<int>( sqstd_rex_getsubexpcount( exp ) );
 }
 
 bool
@@ -1170,7 +1174,9 @@ NativeAPI::Standard::RegexGetSubExpression( SQRex* exp, int n, SQRexMatch* subex
 void
 NativeAPI::Standard::Format( int format_string_index, int* out_string_length, char** output )
 {
-  NativeAPI( vm_ ).RESULT_TEST( sqstd_format, vm_, format_string_index, out_string_length, output );
+  SQInteger tmp_out_string_length;
+  NativeAPI( vm_ ).RESULT_TEST( sqstd_format, vm_, format_string_index, &tmp_out_string_length, output );
+  *out_string_length = static_cast<int>( tmp_out_string_length );
 }
 
 void
@@ -1185,7 +1191,7 @@ NativeAPI::Standard::RegisterStringLibrary( void )
 int
 NativeAPI::Standard::RegisterSystemLibrary( void )
 {
-  return sqstd_register_systemlib( vm_ );
+  return static_cast<int>( sqstd_register_systemlib( vm_ ) );
 }
 
 

@@ -12,6 +12,8 @@ namespace TtSquirrel {
 
   // -- Object -----------------------------------------------------------
   class Object {
+    friend VirtualMachine;
+
   public:
     class Null;
     class Integer;

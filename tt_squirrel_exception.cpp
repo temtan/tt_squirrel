@@ -314,7 +314,7 @@ CompilerException::Dump( void ) const
 
 
 // -- RuntimeException ---------------------------------------------------
-RuntimeException::RuntimeException( const std::string& thrown, std::vector<StackInformation>& call_stack ) :
+RuntimeException::RuntimeException( const std::string& thrown, const std::vector<StackInformation>& call_stack ) :
 thrown_( thrown ),
 call_stack_( call_stack )
 {

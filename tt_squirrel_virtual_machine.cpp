@@ -25,9 +25,9 @@ VirtualMachine::FunctionForCompilerError( HSQUIRRELVM vm, const SQChar* reason, 
 {
   auto it = HANDLE_TABLE.find( vm );
   if ( it != HANDLE_TABLE.end() ) {
-    it->second->last_compiler_error_ = std::shared_ptr<CompilerException>( new CompilerException( reason, source, line, column ) );
+    it->second->last_compiler_error_ = std::make_shared<CompilerException>( reason, source, static_cast<int>( line ), static_cast<int>( column ) );
     if ( it->second->compiler_error_handler_ ) {
-      it->second->compiler_error_handler_( reason, source, line, column );
+      it->second->compiler_error_handler_( reason, source, static_cast<int>( line ), static_cast<int>( column ) );
     }
   }
 }
@@ -56,9 +56,11 @@ vm_( NativeAPI::Open( stack_size ) )
 
 VirtualMachine::~VirtualMachine()
 {
-  auto it = HANDLE_TABLE.find( vm_ );
-  if ( it != HANDLE_TABLE.end() ) {
+  if ( auto it = HANDLE_TABLE.find( vm_ ); it != HANDLE_TABLE.end() ) {
     HANDLE_TABLE.erase( it );
+  }
+  for ( auto& object : externally_objects_ ) {
+    object->vm_ = nullptr;
   }
   if ( vm_ ) {
     this->Native().Close();
@@ -70,6 +72,19 @@ HSQUIRRELVM
 VirtualMachine::GetHandle( void )
 {
   return vm_;
+}
+
+
+void
+VirtualMachine::RegisterExternallyObject( Object* object )
+{
+  externally_objects_.push_back( object );
+}
+
+void
+VirtualMachine::UnregisterExternallyObject( Object* object )
+{
+  externally_objects_.erase( std::remove( externally_objects_.begin(), externally_objects_.end(), object ), externally_objects_.end() );
 }
 
 
@@ -114,6 +129,105 @@ void
 VirtualMachine::PushObject( Object& object )
 {
   Native().PushObject( object.GetHandle() );
+}
+
+
+template <>
+void
+VirtualMachine::PushAuto<int>( int value )
+{
+  this->Native().PushInteger( value );
+}
+
+template <>
+void
+VirtualMachine::PushAuto<int&>( int& value )
+{
+  this->Native().PushInteger( value );
+}
+
+template <>
+void
+VirtualMachine::PushAuto<float>( float value )
+{
+  this->Native().PushFloat( value );
+}
+
+template <>
+void
+VirtualMachine::PushAuto<float&>( float& value )
+{
+  this->Native().PushFloat( value );
+}
+
+template <>
+void
+VirtualMachine::PushAuto<double>( double value )
+{
+  this->Native().PushFloat( static_cast<float>( value ) );
+}
+
+template <>
+void
+VirtualMachine::PushAuto<double&>( double& value )
+{
+  this->Native().PushFloat( static_cast<float>( value ) );
+}
+
+template <>
+void
+VirtualMachine::PushAuto<const char*>( const char* value )
+{
+  this->Native().PushString( value );
+}
+
+template <>
+void
+VirtualMachine::PushAuto<std::string>( std::string value )
+{
+  this->Native().PushString( value );
+}
+
+template <>
+void
+VirtualMachine::PushAuto<std::string&>( std::string& value )
+{
+  this->Native().PushString( value );
+}
+
+template <>
+void
+VirtualMachine::PushAuto<const std::string&>( const std::string& value )
+{
+  this->Native().PushString( value );
+}
+
+template <>
+void
+VirtualMachine::PushAuto<bool>( bool value )
+{
+  this->Native().PushBoolean( value );
+}
+
+template <>
+void
+VirtualMachine::PushAuto<bool&>( bool& value )
+{
+  this->Native().PushBoolean( value );
+}
+
+template <>
+void
+VirtualMachine::PushAuto<SQUserPointer>( SQUserPointer value )
+{
+  this->Native().PushUserPointer( value );
+}
+
+template <>
+void
+VirtualMachine::PushAuto<SQUserPointer&>( SQUserPointer& value )
+{
+  this->Native().PushUserPointer( value );
 }
 
 
@@ -179,6 +293,12 @@ VirtualMachine::NewIntegerSlotOfTopByString( const std::string& key, int value, 
 }
 
 void
+VirtualMachine::NewFloatSlotOfTopByString( const std::string& key, float value, bool is_static )
+{
+  this->NewSlotOfTopByString( key, [&] () { Native().PushFloat( value ); }, is_static );
+}
+
+void
 VirtualMachine::NewNullSlotOfTopByString( const std::string& key, bool is_static )
 {
   this->NewSlotOfTopByString( key, [&] () { Native().PushNull(); }, is_static );
@@ -217,6 +337,12 @@ void
 VirtualMachine::SetIntegerToTopByString( const std::string& key, int value )
 {
   this->SetToTopByString( key, [&] () { Native().PushInteger( value ); } );
+}
+
+void
+VirtualMachine::SetFloatToTopByString( const std::string& key, float value )
+{
+  this->SetToTopByString( key, [&] () { Native().PushFloat( value ); } );
 }
 
 void
@@ -350,6 +476,16 @@ template bool          VirtualMachine::GetByStringFromTopAndGetAs<bool>(        
 template SQUserPointer VirtualMachine::GetByStringFromTopAndGetAs<SQUserPointer>( const std::string& key );
 #endif
 
+std::string
+VirtualMachine::ToStringFromTopAndGetAsString( void )
+{
+  TtSquirrel::StackRecoverer recoverer( this );
+
+  this->Native().ToString( TtSquirrel::Const::StackTop );
+  return this->GetAsFromTop<std::string>();
+}
+
+
 bool
 VirtualMachine::InstanceOf( Operation klass, Operation instance )
 {
@@ -394,6 +530,32 @@ void
 VirtualMachine::CallAndNoReturnValue( Operation clouser, ParametersOperation parameters )
 {
   this->Call( clouser, parameters, false );
+}
+
+void
+VirtualMachine::CallObjectOfGetByStringFromTop( const std::string& key, ParametersOperationPassedTable parameters, bool push_return_value )
+{
+  auto object = this->GetStackTopObject();
+  this->Call(
+    [&] () {
+      this->PushObject( object );
+      this->GetByStringFromTop( key );
+      this->Native().Remove( TtSquirrel::Utility::PushedFromTop( 1 ) );
+    },
+    [&] () { return parameters( object ); },
+    push_return_value );
+}
+
+void
+VirtualMachine::CallObjectOfGetByStringFromTopAndPushReturnValue( const std::string& key, ParametersOperationPassedTable parameters )
+{
+  this->CallObjectOfGetByStringFromTop( key, parameters, true );
+}
+
+void
+VirtualMachine::CallObjectOfGetByStringFromTopAndNoReturnValue( const std::string& key, ParametersOperationPassedTable parameters )
+{
+  this->CallObjectOfGetByStringFromTop( key, parameters, false );
 }
 
 
@@ -484,7 +646,7 @@ void
 VirtualMachine::CompileBuffer( const std::string& buffer, const std::string& buffer_name )
 {
   try {
-    Native().CompileBuffer( buffer, buffer.size(), buffer_name, true );
+    Native().CompileBuffer( buffer, static_cast<int>( buffer.size() ), buffer_name, true );
   }
   catch ( NativeAPIException ) {
     this->ThrowIfErrorOccurred();

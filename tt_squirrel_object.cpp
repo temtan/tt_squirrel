@@ -15,20 +15,17 @@ object_( object ),
 vm_( &vm ),
 auto_reference_( auto_reference )
 {
+  if ( vm_ ) {
+    vm_->RegisterExternallyObject( this );
+  }
   if ( auto_reference_ ) {
     this->AddReference();
   }
 }
 
-
 Object::Object( const Object& other ) :
-object_( other.object_ ),
-vm_( other.vm_ ),
-auto_reference_( other.auto_reference_ )
+Object( other.object_, *other.vm_, other.auto_reference_ )
 {
-  if ( auto_reference_ ) {
-    this->AddReference();
-  }
 }
 
 
@@ -52,6 +49,9 @@ Object::~Object()
 {
   if ( auto_reference_ ) {
     this->Release();
+  }
+  if ( vm_ ) {
+    vm_->UnregisterExternallyObject( this );
   }
 }
 
@@ -86,13 +86,17 @@ Object::GetType( void ) const
 void
 Object::AddReference( void )
 {
-  vm_->Native().AddReference( &object_ );
+  if ( vm_ ) {
+    vm_->Native().AddReference( &object_ );
+  }
 }
 
 void
 Object::Release( void )
 {
-  vm_->Native().Release( &object_ );
+  if ( vm_ ) {
+    vm_->Native().Release( &object_ );
+  }
 }
 
 

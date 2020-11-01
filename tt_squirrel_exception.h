@@ -153,7 +153,7 @@ namespace TtSquirrel {
   // -- RuntimeException -------------------------------------------------
   class RuntimeException : public Exception {
   public:
-    explicit RuntimeException( const std::string& thrown, std::vector<StackInformation>& call_stack );
+    explicit RuntimeException( const std::string& thrown, const std::vector<StackInformation>& call_stack );
     explicit RuntimeException( VirtualMachine& vm );
 
     const std::string& GetThrown( void ) const;

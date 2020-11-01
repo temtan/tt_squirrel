@@ -101,7 +101,7 @@ value_( value )
 StackInformation::StackInformation( SQStackInfos& stack_info ) :
 function_name_( stack_info.funcname ? stack_info.funcname : "unknown" ),
 source_file_path_( stack_info.source ? stack_info.source : "unknown" ),
-source_file_line_( stack_info.line ),
+source_file_line_( static_cast<unsigned int>( stack_info.line ) ),
 local_infos_()
 {
 }

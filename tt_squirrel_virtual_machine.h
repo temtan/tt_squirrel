@@ -37,15 +37,19 @@ namespace TtSquirrel {
 
     HSQUIRRELVM GetHandle( void );
 
+    void RegisterExternallyObject( Object* object );
+    void UnregisterExternallyObject( Object* object );
+
     NativeAPI Native( void );
 
     void RegisterStandardLibraries( void );
     void RegisterDefaultPrintErrorFunction( void );
 
     // ----------
-    using Operation           = std::function<void ( void )>;
-    using ParametersOperation = std::function<unsigned int ( void )>;
-    using Closure             = std::function<int ( VirtualMachine& vm )>;
+    using Operation                      = std::function<void ( void )>;
+    using Closure                        = std::function<int ( VirtualMachine& vm )>;
+    using ParametersOperation            = std::function<unsigned int ( void )>;
+    using ParametersOperationPassedTable = std::function<unsigned int ( TtSquirrel::Object table )>;
 
     void RemainTop( Operation operation );
 
@@ -55,7 +59,7 @@ namespace TtSquirrel {
     }
     template <class TYPE>
     void PushAsUserPointer( TYPE* pointer ) {
-      Native().PushUserPointer( (SQUserPointer)pointer );
+      this->Native().PushUserPointer( (SQUserPointer)pointer );
     }
     template <class TYPE>
     TYPE* GetInstanceUserPointerAs( int index ) {
@@ -63,6 +67,10 @@ namespace TtSquirrel {
     }
 
     void PushObject( Object& object );
+
+    // only -> int, float, double, const char*, std::string, bool, SQUserPointer
+    template <class TYPE>
+    void PushAuto( TYPE value );
 
     void NewSlot( Operation table, Operation key, Operation value, bool is_static = false );
     void NewSlotOfRootTable( Operation key, Operation value );
@@ -72,6 +80,7 @@ namespace TtSquirrel {
     void NewSlotOfTopByStringAsStatic( const std::string& key, Operation value );
     void NewStringSlotOfTopByString( const std::string& key, const std::string& value, bool is_static = false );
     void NewIntegerSlotOfTopByString( const std::string& key, int value, bool is_static = false );
+    void NewFloatSlotOfTopByString( const std::string& key, float value, bool is_static = false );
     void NewBooleanSlotOfTopByString( const std::string& key, bool value, bool is_static = false );
     void NewNullSlotOfTopByString( const std::string& key, bool is_static = false );
 
@@ -80,6 +89,7 @@ namespace TtSquirrel {
     void SetToTopByString( const std::string& key, Operation value );
     void SetStringToTopByString( const std::string& key, const std::string& value );
     void SetIntegerToTopByString( const std::string& key, int value );
+    void SetFloatToTopByString( const std::string& key, float value );
     void SetBooleanToTopByString( const std::string& key, bool value );
 
     void Get( Operation table, Operation key );
@@ -114,6 +124,7 @@ namespace TtSquirrel {
       this->GetByIntegerFromTop( key );
       return this->GetAsFromTop<TYPE>();
     }
+    std::string ToStringFromTopAndGetAsString( void );
 
     bool InstanceOf( Operation klass, Operation instance );
     bool InstanceAtTopOf( Operation klass );
@@ -121,6 +132,9 @@ namespace TtSquirrel {
     void Call( Operation clouser, ParametersOperation parameters, bool push_return_value );
     void CallAndPushReturnValue( Operation clouser, ParametersOperation parameters );
     void CallAndNoReturnValue( Operation clouser, ParametersOperation parameters );
+    void CallObjectOfGetByStringFromTop( const std::string& key, ParametersOperationPassedTable parameters, bool push_return_value );
+    void CallObjectOfGetByStringFromTopAndPushReturnValue( const std::string& key, ParametersOperationPassedTable parameters );
+    void CallObjectOfGetByStringFromTopAndNoReturnValue( const std::string& key, ParametersOperationPassedTable parameters );
 
     void CallPrint( const std::string& str );
 
@@ -195,6 +209,8 @@ namespace TtSquirrel {
     std::shared_ptr<RuntimeException>  last_runtime_error_;
 
     CompilerErrorHandler compiler_error_handler_;
+
+    std::vector<TtSquirrel::Object*> externally_objects_;
   };
 
   // -- StackRecoverer ---------------------------------------------------
