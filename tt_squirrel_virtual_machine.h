@@ -9,6 +9,8 @@
 
 #include "squirrel.h"
 
+#include "tt_enum.h"
+
 #include "tt_squirrel_exception.h"
 #include "tt_squirrel_native_api.h"
 #include "tt_squirrel_object.h"
