@@ -16,6 +16,19 @@
 
 
 namespace TtSquirrel {
+  class VirtualMachine;
+
+  // -- StackRecoverer ---------------------------------------------------
+  class StackRecoverer {
+  public:
+    explicit StackRecoverer( VirtualMachine* vm, unsigned int leave = 0 );
+    ~StackRecoverer();
+
+  private:
+    NativeAPI native_;
+    int       top_;
+  };
+
   // -- VirtualMachine ---------------------------------------------------
   class VirtualMachine {
   public:
@@ -211,16 +224,5 @@ namespace TtSquirrel {
     CompilerErrorHandler compiler_error_handler_;
 
     std::vector<TtSquirrel::Object*> externally_objects_;
-  };
-
-  // -- StackRecoverer ---------------------------------------------------
-  class StackRecoverer {
-  public:
-    explicit StackRecoverer( VirtualMachine* vm, unsigned int leave = 0 ) :
-    native_( vm->Native() ), top_( native_.GetTop() + leave ) {}
-    ~StackRecoverer() { native_.SetTop( top_ ); }
-  private:
-    NativeAPI native_;
-    int       top_;
   };
 }

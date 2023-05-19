@@ -15,6 +15,18 @@ using namespace TtSquirrel;
 // PCSS( this->GetTopType().ToString() );
 
 
+// -- StackRecoverer ---------------------------------------------------
+StackRecoverer::StackRecoverer( VirtualMachine* vm, unsigned int leave ) :
+native_( vm->Native() ),
+top_( native_.GetTop() + leave )
+{
+}
+
+StackRecoverer::~StackRecoverer()
+{
+  native_.SetTop( top_ );
+}
+
 
 // -- VirtualMachine -----------------------------------------------------
 std::unordered_map<HSQUIRRELVM, VirtualMachine*>
