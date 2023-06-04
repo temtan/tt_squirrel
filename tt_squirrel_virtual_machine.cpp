@@ -14,6 +14,13 @@ using namespace TtSquirrel;
 // PCI( Native().GetTopIndex() );
 // PCSS( this->GetTopType().ToString() );
 
+namespace Tag {
+#define DEFINE_PARAMETER_NAME_STRING( name ) static const std::string name( #name )
+  // DEFINE_PARAMETER_NAME_STRING(  );
+  DEFINE_PARAMETER_NAME_STRING( puts );
+  DEFINE_PARAMETER_NAME_STRING( print );
+}
+
 
 // -- StackRecoverer ---------------------------------------------------
 StackRecoverer::StackRecoverer( VirtualMachine* vm, unsigned int leave ) :
@@ -117,6 +124,26 @@ VirtualMachine::RegisterStandardLibraries( void )
   Native().Std().RegisterSystemLibrary();
   Native().Std().RegisterMathLibrary();
   Native().Std().RegisterStringLibrary();
+
+  // -- My functions -----------------------------------------------------
+  // -- puts -----
+  this->NewSlotOfRootTableByString(
+    Tag::puts,
+    [&] () {
+      this->NewClosure( [] ( VirtualMachine& vm ) -> int {
+        TtSquirrel::Object obj = vm.GetStackTopObject( false );
+        vm.CallAndNoReturnValue(
+          [&] () { vm.GetByStringFromRootTable( Tag::print ); },
+          [&] () {
+            vm.Native().PushRootTable();
+            vm.PushObject( obj );
+            return 2;
+          } );
+        vm.CallPrint( "\n" );
+        return TtSquirrel::Const::NoneReturnValue;
+      } );
+      Native().SetParamsCheck( 2, "t." );
+    } );
 }
 
 void
@@ -589,7 +616,19 @@ void
 VirtualMachine::CallPrint( const std::string& str )
 {
   this->CallAndNoReturnValue(
-    [&] () { this->GetByStringFromRootTable( "print" ); },
+    [&] () { this->GetByStringFromRootTable( Tag::print ); },
+    [&] () {
+      Native().PushRootTable();
+      Native().PushString( str );
+      return 2;
+    } );
+}
+
+void
+VirtualMachine::CallPuts( const std::string& str )
+{
+  this->CallAndNoReturnValue(
+    [&] () { this->GetByStringFromRootTable( Tag::puts ); },
     [&] () {
       Native().PushRootTable();
       Native().PushString( str );

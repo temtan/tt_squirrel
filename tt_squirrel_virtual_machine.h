@@ -156,6 +156,7 @@ namespace TtSquirrel {
     void CallObjectOfGetByStringFromTopAndNoReturnValue( const std::string& key, ParametersOperationPassedTable parameters );
 
     void CallPrint( const std::string& str );
+    void CallPuts( const std::string& str );
 
     void NewClosure( Closure closure, const std::string& name = "" );
 
