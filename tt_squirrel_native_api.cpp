@@ -766,6 +766,12 @@ NativeAPI::Next( int index )
   RESULT_TEST( sq_next, vm_, index );
 }
 
+bool
+NativeAPI::NextWithResult( int index )
+{
+  return SQ_SUCCEEDED( sq_next( vm_, index ) );
+}
+
 void
 NativeAPI::NewMember( int index, bool is_static )
 {

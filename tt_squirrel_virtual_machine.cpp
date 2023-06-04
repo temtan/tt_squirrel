@@ -515,6 +515,20 @@ VirtualMachine::InstanceAtTopOf( Operation klass )
 
 
 void
+VirtualMachine::Foreach( Operation target, ForeachProcess process )
+{
+  StackRecoverer recoverer( this );
+  target();
+  Native().PushNull();
+  while ( Native().NextWithResult( Const::StackTop - 1 ) ) {
+    process( *this );
+    Native().Pop( 2 );
+  }
+  Native().Pop( 1 );
+}
+
+
+void
 VirtualMachine::Call( Operation clouser, ParametersOperation parameters, bool push_return_value )
 {
   StackRecoverer recoverer( this, push_return_value ? 1 : 0 );

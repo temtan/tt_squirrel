@@ -144,6 +144,10 @@ namespace TtSquirrel {
     bool InstanceOf( Operation klass, Operation instance );
     bool InstanceAtTopOf( Operation klass );
 
+    // StackTop = value ; Stacktop -1 = key(index)
+    using ForeachProcess = std::function<void ( VirtualMachine& vm )>;
+    void Foreach( Operation target, ForeachProcess process );
+
     void Call( Operation clouser, ParametersOperation parameters, bool push_return_value );
     void CallAndPushReturnValue( Operation clouser, ParametersOperation parameters );
     void CallAndNoReturnValue( Operation clouser, ParametersOperation parameters );

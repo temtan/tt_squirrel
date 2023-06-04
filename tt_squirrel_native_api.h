@@ -171,6 +171,7 @@ namespace TtSquirrel {
     void RawGet( int index );
     void RawSet( int index );
     void Next( int index );
+    bool NextWithResult( int index );
     void NewMember( int index, bool is_static );
     void RawNewMember( int index, bool is_static );
 
