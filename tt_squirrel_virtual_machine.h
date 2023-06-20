@@ -65,6 +65,7 @@ namespace TtSquirrel {
     void RegisterStandardLibraries( void );
     void RegisterAdditionalLibrariesUtility( void );
     void RegisterAdditionalLibrariesMessageBox( void );
+    void RegisterAdditionalLibrariesPath( void );
 
     void RegisterDefaultPrintErrorFunction( void );
 
