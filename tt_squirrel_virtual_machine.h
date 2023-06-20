@@ -27,8 +27,8 @@ namespace TtSquirrel {
     ~StackRecoverer();
 
   private:
-    NativeAPI native_;
-    int       top_;
+    VirtualMachine* vm_;
+    int             top_;
   };
 
   // -- VirtualMachine ---------------------------------------------------
@@ -57,7 +57,10 @@ namespace TtSquirrel {
 
     NativeAPI Native( void );
 
+    void RegisterStandardLibrariesAndAllAdditionalLibraries( void );
     void RegisterStandardLibraries( void );
+    void RegisterAdditionalLibrariesUtility( void );
+
     void RegisterDefaultPrintErrorFunction( void );
 
     // ----------
