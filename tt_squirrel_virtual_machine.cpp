@@ -63,7 +63,8 @@ VirtualMachine::GetVirtualMachineByHandle( HSQUIRRELVM vm )
 }
 
 VirtualMachine::VirtualMachine( int stack_size ) :
-vm_( NativeAPI::Open( stack_size ) )
+vm_( NativeAPI::Open( stack_size ) ),
+parent_window_( nullptr )
 {
   HANDLE_TABLE.insert( {vm_, this} );
   Native().SetCompilerErrorHandler( VirtualMachine::FunctionForCompilerError );
@@ -112,6 +113,19 @@ VirtualMachine::Native( void )
 {
   return NativeAPI( vm_ );
 }
+
+TtWindow*
+VirtualMachine::GetParentWindow( void )
+{
+  return parent_window_;
+}
+
+void
+VirtualMachine::SetParentWindow( TtWindow* parent )
+{
+  parent_window_ = parent;
+}
+
 
 void
 VirtualMachine::RegisterStandardLibrariesAndAllAdditionalLibraries( void )

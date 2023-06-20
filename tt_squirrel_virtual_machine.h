@@ -10,6 +10,7 @@
 #include "squirrel.h"
 
 #include "tt_enum.h"
+#include "tt_window.h"
 
 #include "tt_squirrel_exception.h"
 #include "tt_squirrel_native_api.h"
@@ -56,6 +57,9 @@ namespace TtSquirrel {
     void UnregisterExternallyObject( Object* object );
 
     NativeAPI Native( void );
+
+    TtWindow* GetParentWindow( void );
+    void SetParentWindow( TtWindow* parent );
 
     void RegisterStandardLibrariesAndAllAdditionalLibraries( void );
     void RegisterStandardLibraries( void );
@@ -227,6 +231,8 @@ namespace TtSquirrel {
 
   private:
     HSQUIRRELVM vm_;
+
+    TtWindow* parent_window_;
 
     std::shared_ptr<CompilerException> last_compiler_error_;
     std::shared_ptr<RuntimeException>  last_runtime_error_;
