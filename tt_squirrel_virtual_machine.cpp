@@ -132,6 +132,7 @@ VirtualMachine::RegisterStandardLibrariesAndAllAdditionalLibraries( void )
 {
   this->RegisterStandardLibraries();
   this->RegisterAdditionalLibrariesUtility();
+  this->RegisterAdditionalLibrariesMessageBox();
 }
 
 void
