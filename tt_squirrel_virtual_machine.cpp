@@ -62,6 +62,7 @@ VirtualMachine::GetVirtualMachineByHandle( HSQUIRRELVM vm )
   return *it->second;
 }
 
+
 VirtualMachine::VirtualMachine( int stack_size ) :
 vm_( NativeAPI::Open( stack_size ) ),
 parent_window_( nullptr )
@@ -134,6 +135,7 @@ VirtualMachine::RegisterStandardLibrariesAndAllAdditionalLibraries( void )
   this->RegisterAdditionalLibrariesUtility();
   this->RegisterAdditionalLibrariesMessageBox();
   this->RegisterAdditionalLibrariesPath();
+  this->RegisterAdditionalLibrariesFileDialog();
 }
 
 void
