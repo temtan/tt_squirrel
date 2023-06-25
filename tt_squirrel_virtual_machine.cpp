@@ -118,7 +118,7 @@ VirtualMachine::Native( void )
 TtWindow*
 VirtualMachine::GetParentWindow( void )
 {
-  return parent_window_;
+  return parent_window_ ? parent_window_ : &TtExtraordinarilyWindow::Null;
 }
 
 void
