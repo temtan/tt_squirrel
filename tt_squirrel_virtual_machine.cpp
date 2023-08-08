@@ -657,11 +657,11 @@ VirtualMachine::NewClosure( Closure closure, const std::string& name )
       return ret;
     }
     catch ( CompilerException& ex ) {
-      vm.last_compiler_error_ = std::shared_ptr<CompilerException>( new CompilerException( ex ) );
+      vm.last_compiler_error_ = std::make_shared<CompilerException>( ex );
       return SQ_ERROR;
     }
     catch ( RuntimeException& ex ) {
-      vm.last_runtime_error_ = std::shared_ptr<RuntimeException>( new RuntimeException( ex ) );
+      vm.last_runtime_error_ = std::make_shared<RuntimeException>( ex );
       return SQ_ERROR;
     }
     catch ( NativeAPIException& ex ) {
@@ -872,7 +872,7 @@ void
 VirtualMachine::RegisterErrorHandler( Closure closure )
 {
   Closure tmp = [&, closure] ( VirtualMachine& vm ) -> int {
-    last_runtime_error_ = std::shared_ptr<RuntimeException>( new RuntimeException( vm ) );
+    last_runtime_error_ = std::make_shared<RuntimeException>( vm );
     return closure( vm );
   };
   this->NewClosure( tmp );
