@@ -225,7 +225,13 @@ VirtualMachine::RegisterAdditionalLibrariesFileDialog( void )
         [&] () {
           this->NewClosure( [] ( VirtualMachine& vm ) -> int {
             TtFolderBrowserDialog dialog;
-            dialog.SetDescription( vm.GetByStringFromTopAndGetAs<std::string>( Tag::description ) );
+            {
+              StackRecoverer recoverer( &vm );
+              vm.GetByStringFromTop( Tag::description );
+              if ( vm.GetTopType() == ObjectType::String ) {
+                dialog.SetDescription( vm.GetAsFromTop<std::string>() );
+              }
+            }
 
             bool ret = vm.GetParentWindow() ? dialog.ShowDialog( *vm.GetParentWindow() ) : dialog.ShowDialog();
 
