@@ -1,5 +1,7 @@
 // addition/utility.cpp
 
+#include "tt_path.h"
+
 #include "tt_squirrel_virtual_machine.h"
 
 using namespace TtSquirrel;
@@ -14,6 +16,7 @@ namespace Tag {
   DEFINE_PARAMETER_NAME_STRING( writen );
   DEFINE_PARAMETER_NAME_STRING( read_line );
   DEFINE_PARAMETER_NAME_STRING( readn );
+  DEFINE_PARAMETER_NAME_STRING( mkdir );
   // DEFINE_PARAMETER_NAME_STRING(  );
 }
 
@@ -40,6 +43,37 @@ VirtualMachine::RegisterAdditionalLibrariesUtility( void )
         return TtSquirrel::Const::NoneReturnValue;
       } );
       Native().SetParamsCheck( 2, "t." );
+    } );
+
+  // -- mkdir -----
+  this->NewSlotOfRootTableByString(
+    Tag::mkdir,
+    [&] () {
+      this->NewClosure( [] ( VirtualMachine& vm ) -> int {
+        std::string path = vm.GetAsFromTop<std::string>();
+        if ( TtPath::IsRelative( path ) ) {
+          char cur[1024];
+          ::GetCurrentDirectory( sizeof( cur ), cur );
+          path = std::string( cur ) + "\\" + path;
+        }
+
+        auto tmp = [&] ( void ) -> bool {
+          if ( TtPath::IsDirectory( path ) ) {
+            return false;
+          }
+          auto ret = ::SHCreateDirectoryEx( nullptr, path.c_str(), nullptr );
+          if ( ret == ERROR_SUCCESS ) {
+            return true;
+          }
+          std::string message = TtUtility::GetWindowsSystemErrorMessage( ret );
+          vm.Native().ThrowError( message );
+          throw TtSquirrel::RuntimeException( message, vm.GetCallStack() );
+        };
+
+        vm.Native().PushBoolean( tmp() );
+        return TtSquirrel::Const::ExistReturnValue;
+      } );
+      Native().SetParamsCheck( 2, "ts" );
     } );
 
   // -- add to file class -----
