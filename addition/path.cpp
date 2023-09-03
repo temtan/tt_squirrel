@@ -1,6 +1,7 @@
 // addition/path.cpp
 
 #include "tt_path.h"
+#include "tt_string.h"
 
 #include "tt_squirrel_virtual_machine.h"
 
@@ -13,6 +14,8 @@ namespace Tag {
   DEFINE_PARAMETER_NAME_STRING( file_exist );
   DEFINE_PARAMETER_NAME_STRING( basename );
   DEFINE_PARAMETER_NAME_STRING( dirname );
+  DEFINE_PARAMETER_NAME_STRING( has_extension );
+  DEFINE_PARAMETER_NAME_STRING( remove_extension );
   DEFINE_PARAMETER_NAME_STRING( change_extension );
   DEFINE_PARAMETER_NAME_STRING( get_execute_file_directory_path );
   DEFINE_PARAMETER_NAME_STRING( get_file_not_exist_path_from );
@@ -61,6 +64,32 @@ VirtualMachine::RegisterAdditionalLibrariesPath( void )
         [&] () {
           this->NewClosure( [] ( VirtualMachine& vm ) -> int {
             vm.Native().PushString( TtPath::DirName( vm.GetAsFromTop<std::string>() ) );
+            return TtSquirrel::Const::ExistReturnValue;
+          } );
+          Native().SetParamsCheck( 2, "ts" );
+        } );
+
+      // -- has_extension ’è‹`
+      this->NewSlotOfTopByString(
+        Tag::has_extension,
+        [&] () {
+          this->NewClosure( [] ( VirtualMachine& vm ) -> int {
+            std::string extension = vm.GetAsFromTop<std::string>();
+            vm.Native().PopTop();
+            std::string path = vm.GetAsFromTop<std::string>();
+            vm.Native().PopTop();
+            vm.Native().PushBoolean( TtString::EndWith( TtString::ToLower( path ), "." + TtString::ToLower( extension ) ) );
+            return TtSquirrel::Const::ExistReturnValue;
+          } );
+          Native().SetParamsCheck( 3, "tss" );
+        } );
+
+      // -- remove_extension ’è‹`
+      this->NewSlotOfTopByString(
+        Tag::remove_extension,
+        [&] () {
+          this->NewClosure( [] ( VirtualMachine& vm ) -> int {
+            vm.Native().PushString( TtPath::RemoveExtension( vm.GetAsFromTop<std::string>() ) );
             return TtSquirrel::Const::ExistReturnValue;
           } );
           Native().SetParamsCheck( 2, "ts" );
